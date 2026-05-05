@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { USD_TO_ARS, WA_NUMBER } from '../data/products';
 
 // ============================================================
-// CheckoutModal — Modal de confirmación de pedido por WhatsApp
+// CheckoutModal — Modal de confirmación de pedido (Mobile-First)
 // ============================================================
 
 const WhatsAppIcon = () => (
@@ -39,48 +39,108 @@ export default function CheckoutModal({ isOpen, cart, onClose }) {
       <style>{`
         .checkout-overlay {
           position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-          z-index: 4000; display: flex; align-items: center; justify-content: center;
-          padding: 20px; backdrop-filter: blur(6px);
+          z-index: 4000; display: flex; align-items: flex-end; justify-content: center;
+          backdrop-filter: blur(6px);
           animation: fadeIn 0.2s ease;
         }
-        .checkout-box {
-          background: white; border-radius: 24px;
-          max-width: 500px; width: 100%; padding: 40px;
-          position: relative; max-height: 90vh; overflow-y: auto;
+
+        @media (min-width: 600px) {
+          .checkout-overlay { align-items: center; padding: 20px; }
         }
-        .checkout-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-        .checkout-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
-        .form-group { margin-bottom: 16px; }
+
+        .checkout-box {
+          background: white;
+          border-radius: 24px 24px 0 0;
+          width: 100%;
+          padding: 24px 20px;
+          position: relative;
+          max-height: 95dvh;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          /* Safe area for iOS home indicator */
+          padding-bottom: max(24px, env(safe-area-inset-bottom));
+        }
+
+        @media (min-width: 600px) {
+          .checkout-box {
+            border-radius: 24px;
+            max-width: 500px;
+            padding: 40px;
+            max-height: 90vh;
+          }
+        }
+
+        /* Drag handle on mobile */
+        .checkout-handle {
+          width: 36px; height: 4px; border-radius: 2px;
+          background: var(--border); margin: 0 auto 20px;
+        }
+        @media (min-width: 600px) {
+          .checkout-handle { display: none; }
+        }
+
+        .checkout-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        @media (min-width: 600px) {
+          .checkout-title { font-size: 24px; margin-bottom: 6px; }
+        }
+
+        .checkout-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+        @media (min-width: 600px) {
+          .checkout-sub { margin-bottom: 28px; }
+        }
+
+        .form-group { margin-bottom: 14px; }
+        @media (min-width: 600px) {
+          .form-group { margin-bottom: 16px; }
+        }
+
         .form-label {
-          font-size: 12px; font-weight: 600; letter-spacing: 1px;
+          font-size: 11px; font-weight: 600; letter-spacing: 1px;
           text-transform: uppercase; color: var(--text-muted);
           margin-bottom: 6px; display: block;
         }
         .form-control {
-          width: 100%; padding: 12px 16px;
+          width: 100%; padding: 13px 14px;
           border: 1.5px solid var(--border); border-radius: 12px;
-          font-size: 15px; outline: none; transition: border-color 0.2s;
-          font-family: inherit;
+          font-size: 16px; /* Evita zoom en iOS */
+          outline: none; transition: border-color 0.2s;
+          font-family: inherit; appearance: none;
+          -webkit-appearance: none;
+        }
+        @media (min-width: 600px) {
+          .form-control { padding: 12px 16px; font-size: 15px; }
         }
         .form-control:focus { border-color: var(--accent); }
+
         .checkout-summary {
           background: var(--silver); border-radius: 14px;
-          padding: 16px; margin: 20px 0;
+          padding: 14px; margin: 16px 0;
         }
+        @media (min-width: 600px) {
+          .checkout-summary { padding: 16px; margin: 20px 0; }
+        }
+
         .checkout-summary-title {
-          font-size: 13px; font-weight: 600;
+          font-size: 12px; font-weight: 600;
           text-transform: uppercase; letter-spacing: 1px;
-          color: var(--text-muted); margin-bottom: 12px;
+          color: var(--text-muted); margin-bottom: 10px;
         }
         .checkout-summary-item {
           display: flex; justify-content: space-between;
-          font-size: 14px; margin-bottom: 6px;
+          font-size: 13px; margin-bottom: 6px; gap: 8px;
         }
+        .checkout-summary-item span:first-child {
+          flex: 1; min-width: 0; overflow: hidden;
+          text-overflow: ellipsis; white-space: nowrap;
+        }
+        .checkout-summary-item span:last-child { flex-shrink: 0; }
         .checkout-total-row {
           border-top: 0.5px solid var(--border);
           padding-top: 10px; margin-top: 10px;
           display: flex; justify-content: space-between; font-weight: 700;
+          font-size: 14px;
         }
+
         .btn-send-wp {
           width: 100%; padding: 16px;
           background: var(--whatsapp); color: white;
@@ -88,12 +148,26 @@ export default function CheckoutModal({ isOpen, cart, onClose }) {
           font-size: 16px; font-weight: 600;
           cursor: pointer; transition: all 0.2s;
           display: flex; align-items: center; justify-content: center; gap: 10px;
+          min-height: 54px;
         }
         .btn-send-wp:hover { transform: scale(1.02); }
+        .btn-send-wp:active { transform: scale(0.98); }
+
+        .modal-close {
+          position: absolute; top: 16px; right: 16px;
+          width: 36px; height: 36px; border-radius: 50%;
+          background: var(--silver); border: none;
+          font-size: 16px; cursor: pointer;
+          display: none; align-items: center; justify-content: center;
+        }
+        @media (min-width: 600px) {
+          .modal-close { display: flex; top: 20px; right: 20px; }
+        }
       `}</style>
 
       <div className="checkout-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
         <div className="checkout-box">
+          <div className="checkout-handle" />
           <button className="modal-close" onClick={onClose}>✕</button>
 
           <div className="checkout-title">Confirmar pedido</div>
@@ -108,15 +182,19 @@ export default function CheckoutModal({ isOpen, cart, onClose }) {
               placeholder="Tu nombre"
               value={name}
               onChange={e => setName(e.target.value)}
+              autoComplete="name"
             />
           </div>
           <div className="form-group">
             <label className="form-label">Teléfono / WhatsApp</label>
             <input
               className="form-control"
+              type="tel"
               placeholder="+54 9 351..."
               value={phone}
               onChange={e => setPhone(e.target.value)}
+              autoComplete="tel"
+              inputMode="tel"
             />
           </div>
           <div className="form-group">
@@ -126,6 +204,7 @@ export default function CheckoutModal({ isOpen, cart, onClose }) {
               placeholder="Calle, número, ciudad"
               value={address}
               onChange={e => setAddress(e.target.value)}
+              autoComplete="street-address"
             />
           </div>
           <div className="form-group">
@@ -136,10 +215,10 @@ export default function CheckoutModal({ isOpen, cart, onClose }) {
               placeholder="Algún detalle del pedido..."
               value={note}
               onChange={e => setNote(e.target.value)}
+              style={{ resize: 'none' }}
             />
           </div>
 
-          {/* Resumen */}
           <div className="checkout-summary">
             <div className="checkout-summary-title">Resumen del pedido</div>
             {cart.map(i => (
@@ -150,7 +229,7 @@ export default function CheckoutModal({ isOpen, cart, onClose }) {
             ))}
             <div className="checkout-total-row">
               <span>Total</span>
-              <span>${totalUSD.toLocaleString()} USD / ${totalARS} ARS</span>
+              <span>${totalUSD.toLocaleString()} USD</span>
             </div>
           </div>
 

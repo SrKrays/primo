@@ -2,7 +2,7 @@ import React from 'react';
 import { USD_TO_ARS } from '../data/products';
 
 // ============================================================
-// CartDrawer — Panel lateral del carrito de compras
+// CartDrawer — Panel lateral del carrito (Mobile-First)
 // ============================================================
 
 const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ctext y='40' font-size='40'%3E%F0%9F%93%B1%3C/text%3E%3C/svg%3E";
@@ -26,82 +26,160 @@ export default function CartDrawer({ isOpen, cart, onClose, onChangeQty, onRemov
         }
         .drawer-overlay.open { display: block; }
 
+        /* Mobile: full width drawer from bottom */
         .cart-drawer {
-          position: fixed; top: 0; right: -420px; bottom: 0;
-          width: 420px; background: white; z-index: 3000;
-          box-shadow: -20px 0 60px rgba(0,0,0,0.15);
-          transition: right 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+          position: fixed;
+          left: 0; right: 0; bottom: -100%;
+          height: 92dvh;
+          background: white; z-index: 3000;
+          box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+          transition: bottom 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
           display: flex; flex-direction: column;
+          border-radius: 20px 20px 0 0;
+          overflow: hidden;
         }
-        .cart-drawer.open { right: 0; }
+        .cart-drawer.open { bottom: 0; }
+
+        /* Tablet+: side drawer */
+        @media (min-width: 480px) {
+          .cart-drawer {
+            top: 0; right: -420px; bottom: 0; left: auto;
+            width: min(420px, 90vw);
+            height: 100%;
+            border-radius: 0;
+            box-shadow: -20px 0 60px rgba(0,0,0,0.15);
+            transition: right 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+          }
+          .cart-drawer.open { right: 0; bottom: 0; }
+        }
+
+        /* Drag handle - only on mobile */
+        .cart-drag-handle {
+          width: 36px; height: 4px; border-radius: 2px;
+          background: var(--border); margin: 10px auto 0;
+          flex-shrink: 0;
+        }
+        @media (min-width: 480px) {
+          .cart-drag-handle { display: none; }
+        }
 
         .cart-head {
-          padding: 24px; border-bottom: 0.5px solid var(--border);
+          padding: 16px 20px; border-bottom: 0.5px solid var(--border);
           display: flex; align-items: center; justify-content: space-between;
+          flex-shrink: 0;
         }
-        .cart-title { font-size: 20px; font-weight: 700; }
+        @media (min-width: 480px) {
+          .cart-head { padding: 24px; }
+        }
+
+        .cart-title { font-size: 18px; font-weight: 700; }
+        @media (min-width: 480px) {
+          .cart-title { font-size: 20px; }
+        }
+
         .cart-close {
           background: var(--silver); border: none;
           width: 36px; height: 36px; border-radius: 50%;
           cursor: pointer; font-size: 18px;
           display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
         }
-        .cart-items { flex: 1; overflow-y: auto; padding: 16px 24px; }
+
+        .cart-items {
+          flex: 1; overflow-y: auto; padding: 12px 16px;
+          -webkit-overflow-scrolling: touch;
+        }
+        @media (min-width: 480px) {
+          .cart-items { padding: 16px 24px; }
+        }
+
         .cart-item {
-          display: flex; gap: 12px; padding: 16px 0;
-          border-bottom: 0.5px solid var(--border); align-items: center;
+          display: flex; gap: 12px; padding: 14px 0;
+          border-bottom: 0.5px solid var(--border); align-items: flex-start;
         }
         .cart-item img {
-          width: 64px; height: 64px; object-fit: contain;
-          background: var(--silver); border-radius: 10px; padding: 8px; flex-shrink: 0;
+          width: 60px; height: 60px; object-fit: contain;
+          background: var(--silver); border-radius: 10px; padding: 6px; flex-shrink: 0;
         }
-        .cart-item-name { font-size: 14px; font-weight: 600; }
+        @media (min-width: 480px) {
+          .cart-item img { width: 64px; height: 64px; padding: 8px; }
+        }
+
+        .cart-item-name { font-size: 13px; font-weight: 600; line-height: 1.3; }
+        @media (min-width: 480px) {
+          .cart-item-name { font-size: 14px; }
+        }
+
         .cart-item-detail { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-        .cart-item-price { font-size: 15px; font-weight: 600; margin-top: 4px; }
+        .cart-item-price { font-size: 14px; font-weight: 600; margin-top: 4px; }
+        @media (min-width: 480px) {
+          .cart-item-price { font-size: 15px; }
+        }
+
         .cart-item-remove {
           margin-left: auto; background: none; border: none;
-          color: var(--text-muted); cursor: pointer; font-size: 18px;
-          padding: 4px; flex-shrink: 0;
+          color: var(--text-muted); cursor: pointer; font-size: 20px;
+          padding: 4px; flex-shrink: 0; min-width: 36px; min-height: 36px;
+          display: flex; align-items: center; justify-content: center;
         }
         .cart-item-remove:hover { color: #ff3b30; }
-        .cart-qty { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+
+        .cart-qty { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
         .qty-btn {
-          width: 24px; height: 24px; border-radius: 50%;
+          width: 32px; height: 32px; border-radius: 50%;
           border: 1px solid var(--border); background: white;
-          cursor: pointer; font-size: 14px;
+          cursor: pointer; font-size: 16px;
           display: flex; align-items: center; justify-content: center;
         }
         .qty-btn:hover { background: var(--silver); }
+
         .cart-foot {
-          padding: 20px 24px; border-top: 0.5px solid var(--border);
-          background: var(--silver);
+          padding: 16px; border-top: 0.5px solid var(--border);
+          background: var(--silver); flex-shrink: 0;
+          /* Safe area for home indicator on iOS */
+          padding-bottom: max(16px, env(safe-area-inset-bottom));
         }
-        .cart-total-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
+        @media (min-width: 480px) {
+          .cart-foot { padding: 20px 24px; }
+        }
+
+        .cart-total-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        @media (min-width: 480px) {
+          .cart-total-row { font-size: 15px; }
+        }
+
         .cart-total-row.big {
-          font-size: 18px; font-weight: 700;
-          margin-top: 12px; padding-top: 12px; border-top: 0.5px solid var(--border);
+          font-size: 16px; font-weight: 700;
+          margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border);
         }
+        @media (min-width: 480px) {
+          .cart-total-row.big { font-size: 18px; margin-top: 12px; padding-top: 12px; }
+        }
+
         .btn-checkout {
-          width: 100%; padding: 16px;
+          width: 100%; padding: 15px;
           background: var(--whatsapp); color: white;
           border: none; border-radius: 14px;
-          font-size: 16px; font-weight: 600;
+          font-size: 15px; font-weight: 600;
           cursor: pointer; transition: all 0.2s;
-          margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;
+          margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;
+          min-height: 52px;
+        }
+        @media (min-width: 480px) {
+          .btn-checkout { font-size: 16px; padding: 16px; margin-top: 16px; }
         }
         .btn-checkout:hover { transform: scale(1.02); filter: brightness(1.05); }
+        .btn-checkout:active { transform: scale(0.98); }
+
         .cart-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
         .cart-empty-icon { font-size: 48px; margin-bottom: 16px; }
       `}</style>
 
-      {/* Overlay */}
-      <div
-        className={`drawer-overlay${isOpen ? ' open' : ''}`}
-        onClick={onClose}
-      />
+      <div className={`drawer-overlay${isOpen ? ' open' : ''}`} onClick={onClose} />
 
-      {/* Drawer */}
       <div className={`cart-drawer${isOpen ? ' open' : ''}`}>
+        <div className="cart-drag-handle" />
+
         <div className="cart-head">
           <span className="cart-title">Mi Carrito 🛍️</span>
           <button className="cart-close" onClick={onClose}>✕</button>
@@ -121,7 +199,7 @@ export default function CartDrawer({ isOpen, cart, onClose, onChangeQty, onRemov
                   alt={item.p.name}
                   onError={e => { e.target.src = FALLBACK_IMG; }}
                 />
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="cart-item-name">{item.p.name}</div>
                   <div className="cart-item-detail">
                     {item.storage ? `${item.storage} · ` : ''}USD ${item.p.priceUSD}

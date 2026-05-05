@@ -1,0 +1,75 @@
+/* ============================================================
+   iStore — Estilos globales (Mobile-First Responsive)
+   ============================================================ */
+
+:root {
+  --primary: #1d1d1f;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --silver: #f5f5f7;
+  --card-bg: #ffffff;
+  --text-muted: #6e6e73;
+  --border: #d2d2d7;
+  --success: #34c759;
+  --whatsapp: #25d366;
+  --nav-height: 56px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-height: 64px;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #ffffff;
+  color: var(--primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Animaciones ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+
+/* ── Páginas ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── Bootstrap container override para mobile ── */
+.container {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 576px) {
+  .container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* ── Tap highlight removal ── */
+a, button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Touch-friendly tap targets ── */
+button {
+  min-height: 44px;
+}

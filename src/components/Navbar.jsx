@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 // ============================================================
-// Navbar — Barra de navegación fija con ícono del carrito
+// Navbar — Barra de navegación fija con menú hamburguesa mobile
 // ============================================================
 
 const AppleLogo = () => (
@@ -27,63 +27,174 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar({ currentPage, onNavigate, totalItems, onCartToggle }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Cerrar menú al cambiar de página
+  const handleNavigate = (id) => {
+    onNavigate(id);
+    setMenuOpen(false);
+  };
+
+  // Bloquear scroll del body cuando el menú está abierto
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
   return (
     <>
       <style>{`
         .istore-nav {
           position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
           height: var(--nav-height);
-          background: rgba(255,255,255,0.85);
+          background: rgba(255,255,255,0.92);
           backdrop-filter: saturate(180%) blur(20px);
           -webkit-backdrop-filter: saturate(180%) blur(20px);
           border-bottom: 0.5px solid var(--border);
           display: flex; align-items: center; justify-content: space-between;
-          padding: 0 24px;
+          padding: 0 16px;
         }
+
+        @media (min-width: 768px) {
+          .istore-nav { padding: 0 24px; }
+        }
+
         .nav-logo {
-          font-size: 20px; font-weight: 600; letter-spacing: -0.5px;
+          font-size: 18px; font-weight: 600; letter-spacing: -0.5px;
           color: var(--primary); text-decoration: none;
           display: flex; align-items: center; gap: 6px;
           cursor: pointer; background: none; border: none;
+          min-height: 44px;
         }
-        .nav-links { display: flex; gap: 0; list-style: none; }
+
+        @media (min-width: 768px) {
+          .nav-logo { font-size: 20px; }
+        }
+
+        /* Desktop links - ocultos en mobile */
+        .nav-links {
+          display: none;
+          gap: 0; list-style: none;
+        }
+
+        @media (min-width: 768px) {
+          .nav-links { display: flex; }
+        }
+
         .nav-links a {
           color: var(--primary); text-decoration: none;
           font-size: 13px; font-weight: 400;
-          padding: 8px 14px; border-radius: 20px;
+          padding: 8px 12px; border-radius: 20px;
           transition: background 0.2s, color 0.2s;
           cursor: pointer; display: block;
         }
+
+        @media (min-width: 1024px) {
+          .nav-links a { padding: 8px 14px; }
+        }
+
         .nav-links a:hover,
         .nav-links a.active { background: var(--silver); }
+
+        /* Nav right group */
+        .nav-right {
+          display: flex; align-items: center; gap: 4px;
+        }
+
+        /* Cart button */
         .nav-cart {
           position: relative; cursor: pointer;
           background: none; border: none;
-          padding: 8px; border-radius: 50%;
+          width: 44px; height: 44px; border-radius: 50%;
           transition: background 0.2s;
+          display: flex; align-items: center; justify-content: center;
         }
         .nav-cart:hover { background: var(--silver); }
         .cart-badge {
-          position: absolute; top: 2px; right: 2px;
+          position: absolute; top: 4px; right: 4px;
           background: var(--accent); color: white;
           font-size: 10px; font-weight: 600;
           width: 16px; height: 16px;
           border-radius: 50%; display: flex; align-items: center; justify-content: center;
         }
+
+        /* Hamburger button - solo mobile */
+        .nav-hamburger {
+          display: flex; flex-direction: column; justify-content: center; gap: 5px;
+          width: 44px; height: 44px; border-radius: 10px;
+          background: none; border: none;
+          cursor: pointer; padding: 10px;
+          transition: background 0.2s;
+        }
+        .nav-hamburger:hover { background: var(--silver); }
+        .nav-hamburger span {
+          display: block; height: 1.5px; background: var(--primary);
+          border-radius: 2px; transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+          transform-origin: center;
+        }
+        .nav-hamburger.open span:nth-child(1) {
+          transform: translateY(6.5px) rotate(45deg);
+        }
+        .nav-hamburger.open span:nth-child(2) {
+          opacity: 0; transform: scaleX(0);
+        }
+        .nav-hamburger.open span:nth-child(3) {
+          transform: translateY(-6.5px) rotate(-45deg);
+        }
+
+        @media (min-width: 768px) {
+          .nav-hamburger { display: none; }
+        }
+
+        /* Mobile menu overlay */
+        .mobile-menu-overlay {
+          position: fixed; inset: 0; top: var(--nav-height);
+          background: rgba(255,255,255,0.98);
+          backdrop-filter: blur(20px);
+          z-index: 999;
+          display: flex; flex-direction: column;
+          padding: 16px;
+          transform: translateY(-100%);
+          opacity: 0;
+          transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;
+          pointer-events: none;
+        }
+        .mobile-menu-overlay.open {
+          transform: translateY(0);
+          opacity: 1;
+          pointer-events: all;
+        }
+
+        @media (min-width: 768px) {
+          .mobile-menu-overlay { display: none; }
+        }
+
+        .mobile-nav-links { list-style: none; padding: 8px 0; }
+        .mobile-nav-links li { border-bottom: 0.5px solid var(--border); }
+        .mobile-nav-links a {
+          display: block; padding: 16px 8px;
+          font-size: 17px; font-weight: 500;
+          color: var(--primary); text-decoration: none;
+          cursor: pointer; transition: color 0.2s;
+          min-height: 56px; display: flex; align-items: center;
+        }
+        .mobile-nav-links a.active { color: var(--accent); }
+        .mobile-nav-links a:active { background: var(--silver); border-radius: 10px; }
       `}</style>
 
       <nav className="istore-nav">
-        <button className="nav-logo" onClick={() => onNavigate('home')}>
+        <button className="nav-logo" onClick={() => handleNavigate('home')}>
           <AppleLogo />
           iStore
         </button>
 
+        {/* Desktop links */}
         <ul className="nav-links">
           {NAV_LINKS.map(link => (
             <li key={link.id}>
               <a
                 className={currentPage === link.id ? 'active' : ''}
-                onClick={() => onNavigate(link.id)}
+                onClick={() => handleNavigate(link.id)}
               >
                 {link.label}
               </a>
@@ -91,13 +202,43 @@ export default function Navbar({ currentPage, onNavigate, totalItems, onCartTogg
           ))}
         </ul>
 
-        <button className="nav-cart" onClick={onCartToggle}>
-          <CartIcon />
-          {totalItems > 0 && (
-            <span className="cart-badge">{totalItems}</span>
-          )}
-        </button>
+        <div className="nav-right">
+          <button className="nav-cart" onClick={onCartToggle}>
+            <CartIcon />
+            {totalItems > 0 && (
+              <span className="cart-badge">{totalItems}</span>
+            )}
+          </button>
+
+          {/* Hamburger - mobile only */}
+          <button
+            className={`nav-hamburger${menuOpen ? ' open' : ''}`}
+            onClick={() => setMenuOpen(prev => !prev)}
+            aria-label="Menú"
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
       </nav>
+
+      {/* Mobile dropdown menu */}
+      <div className={`mobile-menu-overlay${menuOpen ? ' open' : ''}`}>
+        <ul className="mobile-nav-links">
+          {NAV_LINKS.map(link => (
+            <li key={link.id}>
+              <a
+                className={currentPage === link.id ? 'active' : ''}
+                onClick={() => handleNavigate(link.id)}
+              >
+                {link.label}
+                {currentPage === link.id && ' ✓'}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
     </>
   );
 }
