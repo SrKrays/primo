@@ -2,166 +2,242 @@ import React, { useState } from 'react';
 import { USD_TO_ARS } from '../data/products';
 
 // ============================================================
-// ProductCard — Tarjeta individual de producto (Mobile-First)
+// ProductCard — Card con overlay deslizante (sin flip 3D)
+// Frente: imagen / Overlay: info básica + botón "Ver más"
+// El botón "Ver más" abre el ProductModal
 // ============================================================
 
-const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Ctext y='80' font-size='60'%3E%F0%9F%93%B1%3C/text%3E%3C/svg%3E";
+const FALLBACK_IMG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Ctext y='90' x='50%25' text-anchor='middle' font-size='70'%3E📱%3C/text%3E%3C/svg%3E";
+
+const styles = `
+  .prod-card-outer {
+    height: 340px;
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 0.5px solid var(--border);
+    background: var(--card-bg);
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (min-width: 576px) { .prod-card-outer { height: 360px; } }
+  @media (min-width: 992px) { .prod-card-outer { height: 380px; } }
+
+  /* FRENTE */
+  .prod-card-front {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .prod-card-outer.revealed .prod-card-front {
+    opacity: 0;
+    transform: scale(0.97);
+    pointer-events: none;
+  }
+
+  .prod-front-img {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--silver);
+    padding: 24px;
+    position: relative;
+  }
+  .prod-front-img img {
+    width: 100%;
+    max-width: 180px;
+    height: 200px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.12));
+  }
+
+  .prod-badge {
+    position: absolute;
+    top: 12px; left: 12px;
+    font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    letter-spacing: 0.5px; z-index: 2;
+  }
+  .prod-badge-new { background: var(--accent); color: white; }
+  .prod-badge-hot { background: #ff3b30; color: white; }
+
+  .prod-front-footer {
+    padding: 14px 16px 16px;
+    background: white;
+    border-top: 0.5px solid var(--border);
+  }
+  .prod-front-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--primary); margin-bottom: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .prod-front-price {
+    font-size: 13px; font-weight: 700;
+    color: var(--accent); margin-bottom: 4px;
+  }
+  .prod-hint {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-muted); letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .prod-color-dots { display: flex; gap: 5px; margin-bottom: 6px; }
+  .prod-color-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1.5px var(--border);
+    flex-shrink: 0;
+  }
+
+  /* DORSO */
+  .prod-card-back {
+    position: absolute;
+    inset: 0;
+    background: #1d1d1f;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 22px 20px 20px;
+    opacity: 0;
+    transform: scale(1.03);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    pointer-events: none;
+  }
+  .prod-card-outer.revealed .prod-card-back {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: all;
+  }
+
+  .prod-back-cat {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 6px;
+  }
+  .prod-back-name {
+    font-size: 18px; font-weight: 700; color: white;
+    letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 10px;
+  }
+  .prod-back-divider {
+    width: 32px; height: 2px;
+    background: var(--accent); border-radius: 1px; margin-bottom: 14px;
+  }
+  .prod-back-desc {
+    font-size: 13px; color: rgba(255,255,255,0.6);
+    line-height: 1.7; flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+  }
+  .prod-back-price-usd {
+    font-size: 24px; font-weight: 700; color: white;
+    letter-spacing: -0.5px; margin-top: 14px; margin-bottom: 2px;
+  }
+  .prod-back-price-ars {
+    font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px;
+  }
+
+  .btn-prod-ver-mas {
+    width: 100%; padding: 12px; border-radius: 12px;
+    border: none; background: var(--accent); color: white;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    min-height: 46px; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-prod-ver-mas:hover { background: var(--accent-hover); }
+  .btn-prod-ver-mas:active { transform: scale(0.97); }
+`;
 
 export default function ProductCard({ product, onOpenModal, onAddToCart }) {
-  const [added, setAdded] = useState(false);
-  const storage = product.storage?.[0] || '';
-  const priceARS = (product.priceUSD * USD_TO_ARS).toLocaleString('es-AR');
+  const [revealed, setRevealed] = useState(false);
 
-  const handleAdd = (e) => {
-    e.stopPropagation();
-    onAddToCart(product, storage);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
-  };
+  const priceARS = (product.priceUSD * USD_TO_ARS).toLocaleString('es-AR');
 
   return (
     <>
-      <style>{`
-        .product-card {
-          background: var(--card-bg); border-radius: 16px;
-          border: 0.5px solid var(--border);
-          overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .product-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
-        .product-card:active { transform: scale(0.98); }
-
-        .product-img-wrap {
-          background: var(--silver); padding: 20px 16px;
-          text-align: center; position: relative;
-        }
-        @media (min-width: 768px) {
-          .product-img-wrap { padding: 32px; }
-        }
-
-        .product-img-wrap img {
-          height: 120px; object-fit: contain; transition: transform 0.3s;
-          width: 100%; max-width: 180px;
-        }
-        @media (min-width: 768px) {
-          .product-img-wrap img { height: 160px; max-width: none; }
-        }
-
-        .product-card:hover .product-img-wrap img { transform: scale(1.05); }
-
-        .badge-new {
-          position: absolute; top: 10px; left: 10px;
-          background: var(--accent); color: white;
-          font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-        }
-        .badge-hot {
-          position: absolute; top: 10px; left: 10px;
-          background: #ff3b30; color: white;
-          font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-        }
-        @media (min-width: 768px) {
-          .badge-new, .badge-hot { font-size: 11px; padding: 3px 10px; top: 12px; left: 12px; }
-        }
-
-        .product-info { padding: 14px 14px 16px; }
-        @media (min-width: 768px) {
-          .product-info { padding: 16px; }
-        }
-
-        .product-cat {
-          font-size: 10px; font-weight: 600; letter-spacing: 1.2px;
-          text-transform: uppercase; color: var(--text-muted); margin-bottom: 3px;
-        }
-        @media (min-width: 768px) {
-          .product-cat { font-size: 11px; letter-spacing: 1.5px; margin-bottom: 4px; }
-        }
-
-        .product-name {
-          font-size: 14px; font-weight: 600; margin-bottom: 3px;
-          letter-spacing: -0.2px; line-height: 1.3;
-        }
-        @media (min-width: 768px) {
-          .product-name { font-size: 16px; margin-bottom: 4px; letter-spacing: -0.3px; }
-        }
-
-        .product-storage { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
-        @media (min-width: 768px) {
-          .product-storage { margin-bottom: 12px; }
-        }
-
-        .price-usd {
-          font-size: 16px; font-weight: 700; color: var(--primary); letter-spacing: -0.3px;
-        }
-        @media (min-width: 768px) {
-          .price-usd { font-size: 18px; letter-spacing: -0.5px; }
-        }
-
-        .price-ars { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-        @media (min-width: 768px) {
-          .price-ars { font-size: 13px; }
-        }
-
-        .color-dots { display: flex; gap: 5px; margin: 8px 0; }
-        .color-dot {
-          width: 12px; height: 12px; border-radius: 50%;
-          border: 2px solid white; box-shadow: 0 0 0 1.5px #d2d2d7;
-          cursor: pointer; transition: transform 0.15s;
-        }
-        @media (min-width: 768px) {
-          .color-dot { width: 14px; height: 14px; }
-        }
-        .color-dot:hover { transform: scale(1.3); }
-
-        .btn-add {
-          width: 100%; padding: 10px;
-          background: var(--accent); color: white;
-          border: none; border-radius: 10px;
-          font-size: 13px; font-weight: 500;
-          cursor: pointer; transition: all 0.2s;
-          margin-top: 10px; min-height: 42px;
-        }
-        @media (min-width: 768px) {
-          .btn-add { font-size: 14px; }
-        }
-        .btn-add:hover { background: var(--accent-hover); transform: scale(1.02); }
-        .btn-add:active { transform: scale(0.97); }
-        .btn-add.added { background: var(--success); }
-      `}</style>
+      <style>{styles}</style>
 
       <div className="col-6 col-sm-6 col-lg-4 fade-in">
-        <div className="product-card" onClick={() => onOpenModal(product, storage)}>
-          <div className="product-img-wrap">
-            {product.badge === 'new' && <div className="badge-new">Nuevo</div>}
-            {product.badge === 'hot' && <div className="badge-hot">🔥 Popular</div>}
-            <img
-              src={product.img}
-              alt={product.name}
-              onError={e => { e.target.src = FALLBACK_IMG; }}
-            />
+        <div
+          className={`prod-card-outer${revealed ? ' revealed' : ''}`}
+          onMouseEnter={() => setRevealed(true)}
+          onMouseLeave={() => setRevealed(false)}
+          onClick={() => setRevealed(f => !f)}
+          role="article"
+          aria-label={product.name}
+        >
+
+          {/* FRENTE */}
+          <div className="prod-card-front">
+            <div className="prod-front-img">
+              {product.badge === 'new' && (
+                <span className="prod-badge prod-badge-new">Nuevo</span>
+              )}
+              {product.badge === 'hot' && (
+                <span className="prod-badge prod-badge-hot">🔥 Popular</span>
+              )}
+              <img
+                src={product.img}
+                alt={product.name}
+                onError={(e) => { e.target.src = FALLBACK_IMG; }}
+              />
+            </div>
+            <div className="prod-front-footer">
+              {product.colors?.length > 0 && (
+                <div className="prod-color-dots">
+                  {product.colors.slice(0, 5).map((c, i) => (
+                    <span key={i} className="prod-color-dot" style={{ background: c }} />
+                  ))}
+                </div>
+              )}
+              <div className="prod-front-name">{product.name}</div>
+              <div className="prod-front-price">USD ${product.priceUSD.toLocaleString()}</div>
+              <div className="prod-hint">
+                Ver más
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </div>
+            </div>
           </div>
 
-          <div className="product-info">
-            <div className="product-cat">{product.cat}</div>
-            <div className="product-name">{product.name}</div>
-            {storage && <div className="product-storage">{storage}</div>}
-
-            <div className="color-dots">
-              {(product.colors || []).slice(0, 4).map((color, i) => (
-                <div key={i} className="color-dot" style={{ background: color }} />
-              ))}
+          {/* DORSO */}
+          <div className="prod-card-back">
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div className="prod-back-cat">{product.cat}</div>
+              <div className="prod-back-name">{product.name}</div>
+              <div className="prod-back-divider" />
+              <div className="prod-back-desc">{product.desc}</div>
             </div>
 
-            <div className="price-usd">USD ${product.priceUSD.toLocaleString()}</div>
-            <div className="price-ars">ARS ${priceARS}</div>
+            <div>
+              <div className="prod-back-price-usd">
+                USD ${product.priceUSD.toLocaleString()}
+              </div>
+              <div className="prod-back-price-ars">ARS ${priceARS}</div>
 
-            <button
-              className={`btn-add${added ? ' added' : ''}`}
-              onClick={handleAdd}
-            >
-              {added ? '✓ Agregado' : '+ Agregar'}
-            </button>
+              <button
+                className="btn-prod-ver-mas"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenModal(product, product.storage?.[0] || '');
+                }}
+              >
+                Ver más
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
           </div>
+
         </div>
       </div>
     </>

@@ -69,7 +69,7 @@ export default function NosotrosPage() {
               el proceso. Sin intermediarios raros ni tiendas impersonales.
             </p>
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/maxigiimenezz/"
               target="_blank"
               rel="noreferrer"
               className="btn-nosotros"

@@ -184,20 +184,6 @@ export default function ProductModal({ product, initialStorage, onClose, onAddTo
                 <div className="modal-title">{product.name}</div>
                 <div className="modal-desc">{product.desc}</div>
 
-                {product.storage?.length > 0 && (
-                  <div style={{ marginBottom: 16 }}>
-                    <div className="storage-label">ALMACENAMIENTO</div>
-                    {product.storage.map(s => (
-                      <button
-                        key={s}
-                        className={`storage-btn${selectedStorage === s ? ' active' : ''}`}
-                        onClick={() => setSelectedStorage(s)}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                )}
 
                 <div className="modal-price-usd">USD ${product.priceUSD.toLocaleString()}</div>
                 <div className="modal-price-ars">ARS ${priceARS}</div>

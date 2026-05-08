@@ -58,15 +58,15 @@ export default function Footer() {
         <div className="container">
           <div className="footer-row">
             <div>
-              <div className="footer-brand">🍎 iStore</div>
+              <div className="footer-brand">🍎 iPrimo</div>
               <div className="footer-tagline">Tecnología Apple al alcance de todos.</div>
-              <div className="footer-copy">© 2025 iStore · Hecho con ❤️ en Argentina</div>
+              <div className="footer-copy">© 2026 iPrimo · Hecho con ❤️ para mi Compa Primo</div>
             </div>
             <div className="footer-links">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="footer-link">
+              <a href="https://www.instagram.com/maxigiimenezz/" target="_blank" rel="noreferrer" className="footer-link">
                 📸 Instagram
               </a>
-              <a href="https://wa.me/5493510000000" target="_blank" rel="noreferrer" className="footer-link">
+              <a href="https://wa.me/+543512383208" target="_blank" rel="noreferrer" className="footer-link">
                 💬 WhatsApp
               </a>
             </div>
