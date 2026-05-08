@@ -47,7 +47,7 @@ export default function Navbar({ currentPage, onNavigate, totalItems, onCartTogg
         .istore-nav {
           position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
           height: var(--nav-height);
-          background: rgba(255,255,255,0.92);
+          background: rgba(230, 230, 230, 0.92);
           backdrop-filter: saturate(180%) blur(20px);
           -webkit-backdrop-filter: saturate(180%) blur(20px);
           border-bottom: 0.5px solid var(--border);
@@ -185,7 +185,7 @@ export default function Navbar({ currentPage, onNavigate, totalItems, onCartTogg
       <nav className="istore-nav">
         <button className="nav-logo" onClick={() => handleNavigate('home')}>
           <AppleLogo />
-          iStore
+          iPrimo
         </button>
 
         {/* Desktop links */}

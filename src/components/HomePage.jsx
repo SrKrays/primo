@@ -433,7 +433,6 @@ export default function HomePage({ onNavigate, onOpenModal, onAddToCart }) {
         <div className="container" style={{ maxWidth: 680, position: 'relative', zIndex: 1 }}>
           <div className="cta-contact-label">Contacto directo</div>
           <h2 className="cta-contact-title">¿No encontrás<br />lo que buscás?</h2>
-          <p className="cta-contact-sub">Escribinos y te conseguimos el equipo ideal.</p>
           <a
             href={`https://wa.me/${WA_NUMBER}`}
             target="_blank"
